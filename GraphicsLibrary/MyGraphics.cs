@@ -480,5 +480,200 @@ namespace GraphicsLibrary
             pictureBox.Size = image.Size;
             pictureBox.Image = image;
         }
+
+        public void DrawLine(Bitmap image, PictureBox pictureBox, int indexX0, int indexY0, int indexX1, int indexY1, Color color0, Color color1)
+        {
+            BitmapData bmpData = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.ReadWrite, image.PixelFormat);
+
+            //PixelFormat.Format24bppRgb occupies 3 bytes: R, G, B
+            //PixelFormat.Format32bppArgb occupies 4 bytes: A, R, G, B
+            int coefficentPixelFormal = 4;
+            if (image.PixelFormat == PixelFormat.Format24bppRgb) coefficentPixelFormal = 3;
+
+            unsafe
+            {
+                //Search for images location in memory
+                byte* ptr = (byte*)bmpData.Scan0.ToPointer();
+
+                if (image.Width < pictureBox.Width || image.Height < pictureBox.Height)
+                {
+                    Bitmap newImage = new Bitmap(pictureBox.Width, pictureBox.Height, image.PixelFormat);
+                    newImage.MakeTransparent();
+                    BitmapData newBmpData = newImage.LockBits(new Rectangle(0, 0, newImage.Width, newImage.Height), ImageLockMode.ReadWrite, newImage.PixelFormat);
+                    byte* newPtr = (byte*)newBmpData.Scan0.ToPointer();
+
+                    for (int i = 0; i < image.Height; i++)
+                    {
+                        for (int j = 0; j < image.Width; j++)
+                        {
+                            byte[] pixelValue = GetPixel(ptr, bmpData.Stride, j * coefficentPixelFormal, i, coefficentPixelFormal);
+                            SetPixel(newPtr, pixelValue, newBmpData.Stride, j * coefficentPixelFormal, i);
+                        }
+                    }
+
+                    newImage.UnlockBits(newBmpData);
+                    image.UnlockBits(bmpData);
+                    image = newImage;
+                    
+                    bmpData = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.ReadWrite, image.PixelFormat);
+                    ptr = (byte*)bmpData.Scan0.ToPointer();
+                }
+
+                List<int[]> coordinate = BresenhamAlgorithmLine(indexX0, indexY0, indexX1, indexY1);
+                List<Color> interpolationColor = Interpolation(color0, color1, coordinate.Count);
+
+                //Loop through draw line corresponding coordinate and color in the image
+                for (int i = 0; i < coordinate.Count; i++)  
+                {
+                    Color pointColor = interpolationColor[i];
+
+                    byte[] pixelValue = new byte[coefficentPixelFormal];
+                    pixelValue[0] = pointColor.B;
+                    pixelValue[1] = pointColor.G;
+                    pixelValue[2] = pointColor.R;
+
+                    if (coefficentPixelFormal == 4) pixelValue[3] = pointColor.A;
+
+                    SetPixel(ptr, pixelValue, bmpData.Stride, coordinate[i][0] * coefficentPixelFormal, coordinate[i][1]);
+                }
+            }
+            image.UnlockBits(bmpData);
+            
+            pictureBox.Image = image;
+        }
+
+        public void DrawCircle(Bitmap image, PictureBox pictureBox, int indexX0, int indexY0, int radius, Color colorBorder)
+        {
+            BitmapData bmpData = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.ReadWrite, image.PixelFormat);
+
+            //PixelFormat.Format24bppRgb occupies 3 bytes: R, G, B
+            //PixelFormat.Format32bppArgb occupies 4 bytes: A, R, G, B
+            int coefficentPixelFormal = 4;
+            if (image.PixelFormat == PixelFormat.Format24bppRgb) coefficentPixelFormal = 3;
+
+            unsafe
+            {
+                //Search for images location in memory
+                byte* ptr = (byte*)bmpData.Scan0.ToPointer();
+                
+                List<int[]> coordinate = BresenhamAlgorithmCircle(indexX0, indexY0, radius);
+
+                //Loop through draw line corresponding coordinate and color in the image
+                for (int i = 0; i < coordinate.Count; i++)
+                {
+                    byte[] pixelValue = new byte[coefficentPixelFormal];
+                    pixelValue[0] = colorBorder.B;
+                    pixelValue[1] = colorBorder.G;
+                    pixelValue[2] = colorBorder.R;
+
+                    if (coefficentPixelFormal == 4) pixelValue[3] = colorBorder.A;
+
+                    SetPixel(ptr, pixelValue, bmpData.Stride, coordinate[i][0] * coefficentPixelFormal, coordinate[i][1]);
+                }
+            }
+            image.UnlockBits(bmpData);
+
+            pictureBox.Image = image;
+        }
+
+        public List<int[]> BresenhamAlgorithmLine(int indexX0, int indexY0, int indexX1, int indexY1)
+        {
+            List<int[]> coordinate = new List<int[]>();
+
+            int deltaX = Math.Abs(indexX1 - indexX0);
+            int deltaY = Math.Abs(indexY1 - indexY0);
+
+            int signX = indexX0 < indexX1 ? 1 : -1;
+            int signY = indexY0 < indexY1 ? 1 : -1;
+
+            int error = deltaX - deltaY;
+
+            coordinate.Add(new int[] { indexX1, indexY1 });
+
+            while (indexX0 != indexX1 || indexY0 != indexY1)
+            {
+                coordinate.Add(new int[] { indexX0, indexY0 });
+
+                int error2 = error * 2;
+
+                if (error2 > -deltaY)
+                {
+                    error -= deltaY;
+                    indexX0 += signX;
+                }
+                if (error2 < deltaX)
+                {
+                    error += deltaX;
+                    indexY0 += signY;
+                }
+            }
+
+            return coordinate;
+        }
+
+        public List<int[]> BresenhamAlgorithmCircle(int indexX0, int indexY0, int radius)
+        {
+            List<int[]> coordinate = new List<int[]>();
+
+            int x = 0;
+            int y = radius;
+            int delta = 1 - 2 * radius;
+            int error = 0;
+            while (y >= 0)
+            {
+                coordinate.Add(new int[] { indexX0 + x, indexY0 + y });
+                coordinate.Add(new int[] { indexX0 + x, indexY0 - y });
+                coordinate.Add(new int[] { indexX0 - x, indexY0 + y });
+                coordinate.Add(new int[] { indexX0 - x, indexY0 - y });
+
+                error = 2 * (delta + y) - 1;
+
+                if (delta < 0 && error <= 0)
+                {
+                    ++x;
+                    delta += 2 * x + 1;
+                    continue;
+                }
+
+                error = 2 * (delta - x) - 1;
+
+                if (delta > 0 && error > 0)
+                {
+                    --y;
+                    delta += 1 - 2 * y;
+                    continue;
+                }
+
+                ++x;
+                delta += 2 * (x - y);
+                --y;
+            }
+
+            return coordinate;
+        }
+
+        public List<Color> Interpolation(Color color0, Color color1, int countPoints)
+        {
+            List<Color> interpolationColor = new List<Color>();
+
+            for (int i = 0; i < countPoints; i++)
+            {
+                int R = Convert.ToInt32(color0.R + i * 1.0 * (color1.R - color0.R) / countPoints);
+                int G = Convert.ToInt32(color0.G + i * 1.0 * (color1.G - color0.G) / countPoints);
+                int B = Convert.ToInt32(color0.B + i * 1.0 * (color1.B - color0.B) / countPoints);
+
+                if (R > 255) R = 255;
+                if (G > 255) G = 255;
+                if (B > 255) B = 255;
+
+                if (R < 0) R = 0;
+                if (G < 0) G = 0;
+                if (B < 0) B = 0;
+
+                interpolationColor.Add(Color.FromArgb(R, G, B));
+            } 
+            
+            return interpolationColor;
+        }
     }
 }

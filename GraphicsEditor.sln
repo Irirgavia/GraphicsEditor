@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphicsLibrary", "Graphics
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Graphics editor", "Graphics editor\Graphics editor.csproj", "{2B199E9E-18A9-4585-94BD-3418A39B497E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Animation", "Animation\Animation.csproj", "{A6D76EA6-FD8D-47D3-932B-97083D74CB41}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{2B199E9E-18A9-4585-94BD-3418A39B497E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2B199E9E-18A9-4585-94BD-3418A39B497E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2B199E9E-18A9-4585-94BD-3418A39B497E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A6D76EA6-FD8D-47D3-932B-97083D74CB41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6D76EA6-FD8D-47D3-932B-97083D74CB41}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6D76EA6-FD8D-47D3-932B-97083D74CB41}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6D76EA6-FD8D-47D3-932B-97083D74CB41}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace GraphicsEditor
+namespace Animation
 {
     static class Program
     {
@@ -16,8 +16,7 @@ namespace GraphicsEditor
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new FormEditorImage());
-        
+            Application.Run(new FormAnimation());
         }
     }
 }
